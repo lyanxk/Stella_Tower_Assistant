@@ -1,13 +1,43 @@
-星塔旅人自动化周常爬塔
-需要使用mumu模拟器
+# Stella Tower Assistant
 
-因只追求高分而不追求实用性得名
-记录算是勉强能用的程度，同时能完成周常的3000
-暂时没有做循环，所以必须手动启动
-会占用鼠标
+较之前版本有较大改动，目前还没有改动逻辑，仅调整文件结构增加Vue前端，依旧可以纯CLI启动
 
-12/15
-完成了大部分的功能，目前在20层的商店中有概率出现问题。
-预计下周修复
-12/22
-修复20层商店，添加循环
+## Structure
+
+- `apps/api`: automation engine, FastAPI server, websocket events.
+- `apps/web`: Vue 3 dashboard built with Vite.
+- `docs`: architecture notes and API contract.
+
+## Backend
+
+Run from `apps/api`:
+
+```bash
+python -m stellatowerassistant.cli run
+python -m stellatowerassistant.cli serve
+```
+
+## Frontend
+
+Run from `apps/web`:
+
+```bash
+npm install
+npm run dev
+```
+
+The web app expects the backend API at `http://127.0.0.1:8765`.
+
+## One-command dev start
+
+From the repository root in PowerShell:
+
+```powershell
+.\scripts\start-dev.ps1
+```
+
+If frontend dependencies are not installed yet:
+
+```powershell
+.\scripts\start-dev.ps1 -InstallDependencies
+```

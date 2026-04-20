@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+apps/web/node_modules/
+apps/web/dist/
+
+apps/api/.pytest_cache/
+apps/api/.mypy_cache/
+apps/api/.ruff_cache/

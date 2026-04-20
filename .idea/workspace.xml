@@ -4,15 +4,97 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="55ced7f0-0501-432b-9fbe-d490843c9746" name="更改" comment="修复功能，增加循环">
-      <change afterPath="$PROJECT_DIR$/actions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/shop.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/state.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vision.py" afterDir="false" />
+    <list default="true" id="55ced7f0-0501-432b-9fbe-d490843c9746" name="更改" comment="ref:修改文件结构">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/automation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/emulator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/health.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/settings.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/templates.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/schemas/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/schemas/automation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/schemas/settings.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/schemas/templates.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/ws/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/ws/events.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/cli.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/config/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/runtime/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/runtime/events.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/services/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/services/automation_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/services/emulator_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/services/template_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/tests/test_events.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/tests/test_settings.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/App.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/app/layouts/AppShell.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/app/router/index.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/env.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/features/config-editor/SettingsPanel.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/features/live-status/HealthPanel.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/features/run-control/RunControlPanel.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/features/screenshot-preview/ScreenshotPreview.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/main.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/pages/dashboard/DashboardPage.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/pages/logs/LogsPage.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/pages/settings/SettingsPage.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/pages/templates/TemplatesPage.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/shared/api/client.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/shared/api/events.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/shared/styles/main.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/shared/types/api.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/widgets/log-panel/LogPanel.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/widgets/sidebar/SidebarNav.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/widgets/status-cards/StatusCards.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/widgets/topbar/TopBar.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/tsconfig.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/vite.config.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/api-contract.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/architecture.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/StellaShitMaker.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/StellaTowerAssistant.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auto_tower.py" beforeDir="false" afterPath="$PROJECT_DIR$/auto_tower.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/actions.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/actions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auto_tower.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/config/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/run_loop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/100.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/100.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/back.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/back.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/buy.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/buy.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/choice.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/choice.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/confirm.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/confirm.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/enter_button.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/enter_button.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/enter_shop.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/enter_shop.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/leave.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/leave.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/next.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/next.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/not_enough_money.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/not_enough_money.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/note.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/note.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/quick_start_button.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/quick_start_button.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/refresh.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/refresh.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/save.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/save.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/select.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/select.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/select_confirm.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/select_confirm.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/shop.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/shop.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/sold_out.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/sold_out.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/start_battle.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/start_battle.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/strengthen.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/strengthen.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/tag.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/assets/templates/tag.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shop.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/shop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/state.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/runtime/state.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/uv.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vision.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/vision.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +107,7 @@
     </persistenceIdMap>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="42" />
+    <option name="cachedIndexableFilesCount" value="99" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -67,6 +149,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "PowerShell.start-dev.ps1.executor": "Run",
     "Python.OCRtest.executor": "Run",
     "Python.auto_tower.executor": "Run",
     "Python.auto_tower_test.executor": "Run",
@@ -79,13 +162,14 @@
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "E:/Code/Python/StellaShitMaker",
+    "last_opened_file_path": "E:/Project/Python/StellaTowerAssistant",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "http.proxy",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "ts.external.directory.path": "E:\\Project\\Python\\StellaTowerAssistant\\apps\\web\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -94,8 +178,11 @@
       <recent name="E:\Code\Python\StellaShitMaker" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="E:\Code\Python\StellaShitMaker" />
-      <recent name="E:\Code\Python\StellaShitMaker\python" />
+      <recent name="E:\Project\Python\StellaTowerAssitant\apps\api" />
+      <recent name="E:\Project\Python\StellaTowerAssitant\apps\api\src\stellatowerassitant\core\config" />
+      <recent name="E:\Project\Python\StellaTowerAssitant\apps\api\assets\templates" />
+      <recent name="E:\Project\Python\StellaTowerAssitant\apps\api\src\stellatowerassitant\core\runtime" />
+      <recent name="E:\Project\Python\StellaTowerAssitant\apps\api\src\stellatowerassitant" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -131,7 +218,14 @@
       <workItem from="1776343264080" duration="583000" />
       <workItem from="1776346654630" duration="2158000" />
       <workItem from="1776399649320" duration="2301000" />
-      <workItem from="1776649351140" duration="4937000" />
+      <workItem from="1776649351140" duration="5946000" />
+      <workItem from="1776663600735" duration="1187000" />
+      <workItem from="1776664797692" duration="17000" />
+      <workItem from="1776664842264" duration="2000" />
+      <workItem from="1776664915241" duration="943000" />
+      <workItem from="1776665933427" duration="921000" />
+      <workItem from="1776676093638" duration="1127000" />
+      <workItem from="1776677231331" duration="346000" />
     </task>
     <task id="LOCAL-00001" summary="大体完成">
       <option name="closed" value="true" />
@@ -189,7 +283,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766397546287</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="ref:修改文件结构">
+      <option name="closed" value="true" />
+      <created>1776654672979</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1776654672979</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -211,7 +313,8 @@
     <MESSAGE value="修改最后一层商店，尚未测试，下周周常测试" />
     <MESSAGE value="目前可以自动跑到第20层，20层商店流程还未完善" />
     <MESSAGE value="修复功能，增加循环" />
-    <option name="LAST_COMMIT_MESSAGE" value="修复功能，增加循环" />
+    <MESSAGE value="ref:修改文件结构" />
+    <option name="LAST_COMMIT_MESSAGE" value="ref:修改文件结构" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/StellaShitMaker$auto_tower_test.coverage" NAME="auto_tower_test 覆盖结果" MODIFIED="1766395953173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
