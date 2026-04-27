@@ -4,6 +4,8 @@ __pycache__/
 
 apps/web/node_modules/
 apps/web/dist/
+apps/web/.npm-cache/
+apps/web/.electron-cache/
 
 apps/api/.pytest_cache/
 apps/api/.mypy_cache/

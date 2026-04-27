@@ -15,6 +15,16 @@
       <strong>{{ status?.is_paused ? "Paused" : "Live" }}</strong>
       <small>Skip initial: {{ status?.skip_initial_wait ? "enabled" : "off" }}</small>
     </article>
+    <article class="status-card">
+      <span>Elevator Floor</span>
+      <strong>{{ formatValue(status?.elevator_floor) }}</strong>
+      <small>Latest OCR floor reading</small>
+    </article>
+    <article class="status-card">
+      <span>Money</span>
+      <strong>{{ formatValue(status?.current_money) }}</strong>
+      <small>Latest OCR money reading</small>
+    </article>
   </section>
 </template>
 
@@ -24,4 +34,8 @@ import type { AutomationStatus } from "@/shared/types/api";
 defineProps<{
   status: AutomationStatus | null;
 }>();
+
+function formatValue(value: number | null | undefined) {
+  return value ?? "--";
+}
 </script>

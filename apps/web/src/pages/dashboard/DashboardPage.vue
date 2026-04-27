@@ -36,12 +36,22 @@ const health = ref<Record<string, unknown> | null>(null);
 const windowInfo = ref<Record<string, unknown> | null>(null);
 let socket: WebSocket | null = null;
 
+function debugRuntimeSnapshot(source: string, nextStatus: AutomationStatus | null) {
+  console.log("[StellaTowerAssistant]", source, {
+    elevatorFloor: nextStatus?.elevator_floor ?? null,
+    currentGold: nextStatus?.current_money ?? null,
+    isRunning: nextStatus?.is_running ?? null,
+    lastMessage: nextStatus?.last_message ?? null,
+  });
+}
+
 async function loadBaseData() {
   status.value = await apiClient.getStatus();
   logs.value = await apiClient.getLogs();
   settings.value = await apiClient.getSettings();
   health.value = await apiClient.getHealth();
   windowInfo.value = await apiClient.getWindow();
+  debugRuntimeSnapshot("loadBaseData", status.value);
 }
 
 async function loadScreenshot() {
@@ -64,6 +74,7 @@ onMounted(async () => {
   socket = createEventSocket((message) => {
     if (message.type === "status") {
       status.value = message.data;
+      debugRuntimeSnapshot("websocket:status", status.value);
     } else if (message.type === "logs") {
       logs.value = message.data;
     } else {

@@ -8,6 +8,8 @@ export type AutomationStatus = {
   last_message: string;
   started_at: string | null;
   finished_at: string | null;
+  elevator_floor: number | null;
+  current_money: number | null;
   thread_alive: boolean;
 };
 

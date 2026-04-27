@@ -9,7 +9,7 @@ $apiDir = Join-Path $repoRoot "apps\api"
 $webDir = Join-Path $repoRoot "apps\web"
 $pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
 $backendArgs = '-NoExit', '-Command', "Set-Location '$apiDir'; `$env:PYTHONPATH='src'; & '$pythonExe' -m stellatowerassistant.cli serve"
-$frontendArgs = '-NoExit', '-Command', "Set-Location '$webDir'; npm run dev"
+$frontendArgs = '-NoExit', '-Command', "Set-Location '$webDir'; npm.cmd run dev"
 
 if (-not (Test-Path $pythonExe)) {
     throw "Python virtual environment not found: $pythonExe"
@@ -19,7 +19,7 @@ if ($InstallDependencies) {
     Write-Host "Installing frontend dependencies..." -ForegroundColor Yellow
     Push-Location $webDir
     try {
-        npm install
+        npm.cmd install
     }
     finally {
         Pop-Location

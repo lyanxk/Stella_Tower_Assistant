@@ -37,6 +37,30 @@ From the repository root in PowerShell:
 .\scripts\start-dev.ps1
 ```
 
+To launch the Vue frontend in a standalone Electron window instead of a browser tab:
+
+```powershell
+.\scripts\start-window.ps1
+```
+
+If frontend dependencies are not installed yet:
+
+```powershell
+.\scripts\start-window.ps1 -InstallDependencies
+```
+
+If Electron was installed with scripts disabled, rebuild its runtime from `apps/web`:
+
+```powershell
+npm.cmd rebuild electron
+```
+
+You can also run the same desktop entry from `apps/web`:
+
+```powershell
+npm run desktop
+```
+
 For the standalone OCR capture tool:
 
 ```powershell
