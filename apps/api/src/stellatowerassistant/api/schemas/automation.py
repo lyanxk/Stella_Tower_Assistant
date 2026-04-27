@@ -20,6 +20,8 @@ class AutomationStatus(BaseModel):
     last_message: str
     started_at: str | None = None
     finished_at: str | None = None
+    elevator_floor: int | None = None
+    current_gold: int | None = None
     thread_alive: bool
 
 

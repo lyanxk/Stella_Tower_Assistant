@@ -17,6 +17,7 @@ from ..config.settings import (
 from ..runtime.events import emit_log
 from ..runtime.state import state
 from .actions import click_blank, click_match_center, click_relative
+from .readings import observe_run_reading
 from .vision import Point, capture_emulator, find_all_matches, load_template, match_template
 
 
@@ -62,6 +63,7 @@ def purchase_note_items() -> None:
     while True:
         state.check_pause_and_running()
         image, _ = capture_emulator()
+        observe_run_reading(image)
         available_notes = find_available_positions(image, note_template, IMAGE_MATCH_THRESHOLD)
         if not available_notes:
             break
@@ -94,6 +96,7 @@ def purchase_hundred_items() -> None:
     while True:
         state.check_pause_and_running()
         image, _ = capture_emulator()
+        observe_run_reading(image)
         available_hundreds = find_available_positions(image, hundred_template, HUNDRED_MATCH_THRESHOLD)
         if not available_hundreds:
             emit_log("debug: no more purchasable 100s found, breaking out of loop", scope="shop")
@@ -131,6 +134,7 @@ def take_thumb_reward(timeout: float = THUMB_REWARD_TIMEOUT) -> None:
     while time.time() - start_time < timeout:
         state.check_pause_and_running()
         image, window_rect = capture_emulator()
+        observe_run_reading(image)
         select_match = match_template(image, select_template, threshold=SELECT_MATCH_THRESHOLD)
         if not select_match:
             time.sleep(0.2)
@@ -161,6 +165,7 @@ def handle_final_shop_refreshes() -> None:
     while refresh_count < FINAL_SHOP_REFRESH_LIMIT:
         state.check_pause_and_running()
         image, window_rect = capture_emulator()
+        observe_run_reading(image)
         refresh_match = match_template(image, refresh_template, threshold=IMAGE_MATCH_THRESHOLD)
         if not refresh_match:
             break
@@ -175,6 +180,7 @@ def handle_final_shop_refreshes() -> None:
 
     emit_log("debug: reached final shop refresh limit, exiting shop", scope="shop")
     image, window_rect = capture_emulator()
+    observe_run_reading(image)
     back_match = match_template(image, back_template, threshold=IMAGE_MATCH_THRESHOLD)
     if not back_match:
         return
@@ -191,6 +197,7 @@ def exit_regular_shop() -> None:
         return
 
     image, window_rect = capture_emulator()
+    observe_run_reading(image)
     back_match = match_template(image, back_template, threshold=IMAGE_MATCH_THRESHOLD)
     if back_match:
         click_match_center(back_match, window_rect, delay=0.5)
@@ -208,6 +215,7 @@ def confirm_final_shop_exit() -> None:
         return
 
     image, window_rect = capture_emulator()
+    observe_run_reading(image)
     confirm_match = match_template(image, confirm_template, threshold=IMAGE_MATCH_THRESHOLD)
     if confirm_match:
         click_match_center(confirm_match, window_rect, delay=0.5)
@@ -219,6 +227,7 @@ def click_buy_button(delay: float) -> bool:
         return False
 
     image, window_rect = capture_emulator()
+    observe_run_reading(image)
     buy_match = match_template(image, buy_template, threshold=IMAGE_MATCH_THRESHOLD)
     if not buy_match:
         return False
@@ -230,6 +239,7 @@ def click_buy_button(delay: float) -> bool:
 def click_confirm_if_present(delay: float) -> tuple[int, int, int, int]:
     confirm_template = load_template("confirm")
     image, window_rect = capture_emulator()
+    observe_run_reading(image)
     if confirm_template is None:
         return window_rect
 

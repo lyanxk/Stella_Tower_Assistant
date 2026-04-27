@@ -20,6 +20,8 @@ class RuntimeState:
     last_message: str = "Idle"
     started_at: str | None = None
     finished_at: str | None = None
+    elevator_floor: int | None = None
+    current_gold: int | None = None
 
     def toggle_pause(self) -> None:
         self.paused = not self.paused
@@ -50,6 +52,8 @@ class RuntimeState:
         self.last_message = "Starting automation"
         self.started_at = datetime.now(timezone.utc).isoformat()
         self.finished_at = None
+        self.elevator_floor = None
+        self.current_gold = None
 
     def mark_run(self, current_run: int, max_runs: int) -> None:
         self.current_run = current_run
@@ -59,6 +63,12 @@ class RuntimeState:
     def mark_error(self, message: str) -> None:
         self.last_error = message
         self.last_message = "Error"
+
+    def mark_ocr_reading(self, *, elevator_floor: int | None, current_gold: int | None) -> None:
+        if elevator_floor is not None:
+            self.elevator_floor = elevator_floor
+        if current_gold is not None:
+            self.current_gold = current_gold
 
     def mark_finished(self, message: str = "Automation finished") -> None:
         self.running = False
@@ -77,6 +87,8 @@ class RuntimeState:
             "last_message": self.last_message,
             "started_at": self.started_at,
             "finished_at": self.finished_at,
+            "elevator_floor": self.elevator_floor,
+            "current_gold": self.current_gold,
             "thread_alive": thread_alive,
         }
 

@@ -42,6 +42,14 @@ MAX_SHOPS_PER_RUN = 4
 MAX_RUNS = 7
 INITIAL_WAIT_TEMPLATES = ("quick_start", "next", "start_battle")
 
+OCR_OBSERVE_INTERVAL = 1.0
+OCR_ELEVATOR_FLOOR_THRESHOLD = 0.92
+OCR_CURRENT_GOLD_THRESHOLD = 0.92
+OCR_ELEVATOR_FLOOR_REGION = (0.0, 0.0, 1.0, 0.45)
+OCR_CURRENT_GOLD_REGION = (0.0, 0.0, 1.0, 0.25)
+OCR_MIN_FLOOR = 1
+OCR_MAX_FLOOR = 20
+
 TEMPLATES = {
     "quick_start": "quick_start_button.png",
     "next": "next.png",

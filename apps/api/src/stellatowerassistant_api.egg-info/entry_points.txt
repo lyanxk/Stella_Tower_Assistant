@@ -1,0 +1,4 @@
+[console_scripts]
+stella-tower = stellatowerassistant.cli:main
+stella-tower-ocr = stellatowerassistant.ocr_capture:main
+stella-tower-ocr-test = stellatowerassistant.ocr_test_cli:main

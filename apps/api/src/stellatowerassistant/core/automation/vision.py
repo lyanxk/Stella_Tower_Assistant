@@ -22,66 +22,6 @@ Point = tuple[int, int]
 WindowRect = tuple[int, int, int, int]
 
 
-def _ensure_channel_axis(image: np.ndarray) -> np.ndarray:
-    if image.ndim == 2:
-        return image[:, :, None]
-    return image
-
-
-def _window_sums(image: np.ndarray, window_height: int, window_width: int) -> np.ndarray:
-    integral = np.pad(image, ((1, 0), (1, 0), (0, 0)), mode="constant").cumsum(axis=0).cumsum(axis=1)
-    return (
-        integral[window_height:, window_width:]
-        - integral[:-window_height, window_width:]
-        - integral[window_height:, :-window_width]
-        + integral[:-window_height, :-window_width]
-    )
-
-
-def _match_template_coeff_normed(source: np.ndarray, template: np.ndarray) -> np.ndarray:
-    source_3d = _ensure_channel_axis(source)
-    template_3d = _ensure_channel_axis(template)
-
-    source_height, source_width = source_3d.shape[:2]
-    template_height, template_width = template_3d.shape[:2]
-    if source_height < template_height or source_width < template_width:
-        return np.empty((0, 0), dtype=np.float32)
-
-    source_float = source_3d.astype(np.float32)
-    template_float = template_3d.astype(np.float32)
-
-    template_mean = template_float.mean(axis=(0, 1), keepdims=True)
-    template_centered = template_float - template_mean
-    template_energy = float(np.square(template_centered, dtype=np.float64).sum())
-
-    out_height = source_height - template_height + 1
-    out_width = source_width - template_width + 1
-    if template_energy <= 1e-12:
-        return np.zeros((out_height, out_width), dtype=np.float32)
-
-    numerator = np.zeros((out_height, out_width), dtype=np.float32)
-    for channel in range(source_float.shape[2]):
-        channel_response = cv2.filter2D(
-            source_float[:, :, channel],
-            ddepth=cv2.CV_32F,
-            kernel=template_centered[:, :, channel],
-            anchor=(0, 0),
-            borderType=cv2.BORDER_CONSTANT,
-        )
-        numerator += channel_response[:out_height, :out_width]
-
-    source_square = np.square(source_float, dtype=np.float64)
-    source_sums = _window_sums(source_float.astype(np.float64), template_height, template_width)
-    source_square_sums = _window_sums(source_square, template_height, template_width)
-    window_area = float(template_height * template_width)
-    source_energy = np.maximum(source_square_sums - np.square(source_sums) / window_area, 0.0).sum(axis=2)
-
-    denominator = np.sqrt(template_energy * source_energy)
-    scores = np.zeros((out_height, out_width), dtype=np.float32)
-    np.divide(numerator, denominator, out=scores, where=denominator > 1e-12)
-    return np.clip(scores, -1.0, 1.0)
-
-
 @lru_cache(maxsize=None)
 def load_template(name: str) -> Optional[np.ndarray]:
     filename = TEMPLATES.get(name)
@@ -138,10 +78,7 @@ def match_template(
     template: np.ndarray,
     threshold: float = IMAGE_MATCH_THRESHOLD,
 ) -> Optional[Point]:
-    if source is None or template is None:
-        return None
-
-    result = _match_template_coeff_normed(source, template)
+    result = match_template_scores(source, template)
     if result.size == 0:
         return None
 
@@ -154,15 +91,28 @@ def match_template(
     return x + template_width // 2, y + template_height // 2
 
 
+def match_template_scores(source: np.ndarray, template: np.ndarray) -> np.ndarray:
+    if source is None or template is None:
+        return np.empty((0, 0), dtype=np.float32)
+
+    source_height, source_width = source.shape[:2]
+    template_height, template_width = template.shape[:2]
+    if source_height < template_height or source_width < template_width:
+        return np.empty((0, 0), dtype=np.float32)
+
+    if source.dtype != template.dtype or source.dtype not in (np.uint8, np.float32):
+        source = source.astype(np.float32, copy=False)
+        template = template.astype(np.float32, copy=False)
+
+    return cv2.matchTemplate(source, template, cv2.TM_CCOEFF_NORMED)
+
+
 def find_all_matches(
     source: np.ndarray,
     template: np.ndarray,
     threshold: float,
 ) -> list[Point]:
-    if source is None or template is None:
-        return []
-
-    result = _match_template_coeff_normed(source, template)
+    result = match_template_scores(source, template)
     if result.size == 0:
         return []
 

@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: stellatowerassistant-api
+Version: 0.2.0
+Summary: Local automation API and CLI for Stella Tower Assistant.
+Requires-Python: >=3.13
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: keyboard==0.13.5
+Requires-Dist: numpy>=2.2.6
+Requires-Dist: opencv-python==4.12.0.88
+Requires-Dist: pillow==12.0.0
+Requires-Dist: pyautogui==0.9.54
+Requires-Dist: pygetwindow>=0.0.9
+Requires-Dist: pytesseract==0.3.13
+Requires-Dist: uvicorn>=0.32.0

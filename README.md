@@ -15,6 +15,7 @@ Run from `apps/api`:
 ```bash
 python -m stellatowerassistant.cli run
 python -m stellatowerassistant.cli serve
+python -m stellatowerassistant.ocr_capture
 ```
 
 ## Frontend
@@ -34,6 +35,12 @@ From the repository root in PowerShell:
 
 ```powershell
 .\scripts\start-dev.ps1
+```
+
+For the standalone OCR capture tool:
+
+```powershell
+.\scripts\start-ocr-capture.ps1
 ```
 
 If frontend dependencies are not installed yet:

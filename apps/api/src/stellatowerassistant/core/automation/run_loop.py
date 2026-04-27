@@ -8,6 +8,7 @@ from ..config.settings import IMAGE_MATCH_THRESHOLD, MAX_RUNS, MAX_SHOPS_PER_RUN
 from ..runtime.events import emit_log
 from ..runtime.state import state
 from .actions import click_template_if_present, continuous_fast_click, select_choice_or_first, wait_and_click
+from .readings import observe_run_reading, reset_run_reading_observer
 from .shop import handle_shop
 from .vision import capture_emulator, load_template, match_template
 
@@ -15,6 +16,7 @@ _HOTKEYS_REGISTERED = False
 
 
 def main_loop() -> None:
+    reset_run_reading_observer()
     emit_log("Waiting for quick_start (press S to skip initial waits, P pause, Q quit)", scope="automation")
     wait_and_click("quick_start", timeout=60)
 
@@ -32,6 +34,7 @@ def main_loop() -> None:
         state.check_pause_and_running()
         continuous_fast_click()
         image, window_rect = capture_emulator()
+        observe_run_reading(image)
 
         if exit_run_if_save_found(image, window_rect):
             break
