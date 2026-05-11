@@ -40,9 +40,3 @@ def resume() -> ActionResponse:
 def stop() -> ActionResponse:
     ok, message = automation_service.stop()
     return ActionResponse(ok=ok, message=message)
-
-
-@router.post("/skip-initial", response_model=ActionResponse)
-def skip_initial() -> ActionResponse:
-    ok, message = automation_service.skip_initial_wait()
-    return ActionResponse(ok=ok, message=message)

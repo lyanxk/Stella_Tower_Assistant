@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..core.config.settings import CORS_ORIGINS
-from .routes import automation_router, emulator_router, health_router, settings_router, templates_router
+from .routes import automation_router, emulator_router, health_router, settings_router, system_router, templates_router
 from .ws import events_router
 
 
@@ -27,6 +27,7 @@ def create_app() -> FastAPI:
     application.include_router(settings_router)
     application.include_router(templates_router)
     application.include_router(emulator_router)
+    application.include_router(system_router)
     application.include_router(events_router)
     return application
 

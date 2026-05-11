@@ -21,8 +21,6 @@ Base URL: `http://127.0.0.1:8765`
   - Resumes a paused worker.
 - `POST /api/automation/stop`
   - Requests the worker to stop.
-- `POST /api/automation/skip-initial`
-  - Skips the initial waiting sequence.
 
 ## Settings
 
@@ -57,7 +55,6 @@ Base URL: `http://127.0.0.1:8765`
 {
   "is_running": false,
   "is_paused": false,
-  "skip_initial_wait": false,
   "current_run": 0,
   "max_runs": 7,
   "last_error": null,

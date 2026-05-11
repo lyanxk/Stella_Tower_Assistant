@@ -1,5 +1,5 @@
 <template>
-  <AppShell :status="null" :logs="logs">
+  <AppShell :status="status" :logs="logs">
     <section class="panel">
       <div class="panel__header">
         <strong>Full Logs</strong>
@@ -20,14 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
 import AppShell from "@/app/layouts/AppShell.vue";
-import { apiClient } from "@/shared/api/client";
-import type { AutomationLogEntry } from "@/shared/types/api";
+import { useRuntimeEvents } from "@/shared/api/useRuntimeEvents";
 
-const logs = ref<AutomationLogEntry[]>([]);
-
-onMounted(async () => {
-  logs.value = await apiClient.getLogs();
-});
+const { status, logs } = useRuntimeEvents({ logLimit: 300 });
 </script>

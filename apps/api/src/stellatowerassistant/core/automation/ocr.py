@@ -1,65 +1,23 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal
 
 import cv2
 import numpy as np
 
-from ..config.settings import RESOURCE_DIR
-from .vision import match_template_scores
+OcrVariant = Literal["small", "elevator"]
 
-DigitTemplateVariant = Literal["small", "elevator"]
-
-DEFAULT_DIGIT_MATCH_THRESHOLD = 0.92
+DEFAULT_DIGIT_MATCH_THRESHOLD = 0.80
 DEFAULT_DIGIT_MAX_GAP_RATIO = 1.5
 DEFAULT_ROW_ALIGNMENT_RATIO = 0.6
 
-_DIGIT_TEMPLATE_SUFFIXES: dict[DigitTemplateVariant, str] = {
-    "small": "_s",
-    "elevator": "_e",
-}
-
-
-@dataclass(frozen=True)
-class DigitTemplate:
-    digit: str
-    image: np.ndarray
-
-    @property
-    def width(self) -> int:
-        return int(self.image.shape[1])
-
-    @property
-    def height(self) -> int:
-        return int(self.image.shape[0])
-
-
-@dataclass(frozen=True)
-class DigitCandidate:
-    digit: str
-    score: float
-    left: int
-    top: int
-    width: int
-    height: int
-
-    @property
-    def right(self) -> int:
-        return self.left + self.width
-
-    @property
-    def bottom(self) -> int:
-        return self.top + self.height
-
-    @property
-    def center_x(self) -> float:
-        return self.left + self.width / 2
-
-    @property
-    def center_y(self) -> float:
-        return self.top + self.height / 2
+_DIGIT_RE = re.compile(r"\d+")
+_NON_DIGIT_RE = re.compile(r"\D+")
+_OCR_UPSCALE_FACTOR = 2.0
+_OCR_BORDER_PIXELS = 12
 
 
 @dataclass(frozen=True)
@@ -80,42 +38,16 @@ class DigitSequence:
         return self.top + self.height
 
 
-@dataclass
-class _DigitRow:
-    candidates: list[DigitCandidate]
-    center_y: float
-    average_height: float
-
-    def add(self, candidate: DigitCandidate) -> None:
-        self.candidates.append(candidate)
-        count = len(self.candidates)
-        self.center_y = ((self.center_y * (count - 1)) + candidate.center_y) / count
-        self.average_height = ((self.average_height * (count - 1)) + candidate.height) / count
-
-
-@lru_cache(maxsize=None)
-def load_digit_templates(variant: DigitTemplateVariant = "small") -> tuple[DigitTemplate, ...]:
-    suffix = _DIGIT_TEMPLATE_SUFFIXES.get(variant)
-    if suffix is None:
-        raise ValueError(f"Unsupported digit template variant: {variant}")
-
-    templates: list[DigitTemplate] = []
-    for digit in "0123456789":
-        path = RESOURCE_DIR / f"{digit}{suffix}.png"
-        image = cv2.imread(str(path), cv2.IMREAD_COLOR)
-        if image is None or image.size == 0:
-            continue
-        templates.append(DigitTemplate(digit=digit, image=image))
-
-    if not templates:
-        raise ValueError(f"No digit templates found for variant: {variant}")
-
-    return tuple(templates)
+@dataclass(frozen=True)
+class _OcrLine:
+    text: str
+    score: float
+    box: np.ndarray | None
 
 
 def recognize_digit_sequences(
     source: np.ndarray,
-    variant: DigitTemplateVariant = "small",
+    variant: OcrVariant = "small",
     threshold: float = DEFAULT_DIGIT_MATCH_THRESHOLD,
     max_gap_ratio: float = DEFAULT_DIGIT_MAX_GAP_RATIO,
     row_alignment_ratio: float = DEFAULT_ROW_ALIGNMENT_RATIO,
@@ -134,137 +66,177 @@ def recognize_digit_sequences(
 
 def recognize_digit_sequence_groups(
     source: np.ndarray,
-    variant: DigitTemplateVariant = "small",
+    variant: OcrVariant = "small",
     threshold: float = DEFAULT_DIGIT_MATCH_THRESHOLD,
     max_gap_ratio: float = DEFAULT_DIGIT_MAX_GAP_RATIO,
     row_alignment_ratio: float = DEFAULT_ROW_ALIGNMENT_RATIO,
 ) -> list[DigitSequence]:
-    candidates = find_digit_candidates(source, variant=variant, threshold=threshold)
-    if not candidates:
+    del variant, max_gap_ratio, row_alignment_ratio
+
+    if source is None or source.size == 0:
         return []
 
-    sequences: list[DigitSequence] = []
-    for row in _group_candidates_by_row(candidates, row_alignment_ratio=row_alignment_ratio):
-        for group in _split_row_by_gap(row, max_gap_ratio=max_gap_ratio):
-            sequences.append(_build_sequence(group))
+    result = _run_maa_style_ocr(_prepare_ocr_source(source))
+    sequences = [
+        sequence
+        for line in _iter_ocr_lines(result)
+        if (sequence := _build_digit_sequence(line)) is not None and sequence.score >= threshold
+    ]
 
+    if not sequences:
+        inverted_result = _run_maa_style_ocr(_prepare_ocr_source(source, invert=True))
+        sequences = [
+            sequence
+            for line in _iter_ocr_lines(inverted_result)
+            if (sequence := _build_digit_sequence(line)) is not None and sequence.score >= threshold
+        ]
+
+    sequences.sort(key=lambda item: (item.top, item.left))
     return sequences
 
 
-def find_digit_candidates(
-    source: np.ndarray,
-    variant: DigitTemplateVariant = "small",
-    threshold: float = DEFAULT_DIGIT_MATCH_THRESHOLD,
-) -> list[DigitCandidate]:
-    if source is None:
-        return []
+@lru_cache(maxsize=1)
+def _load_ocr_engine() -> Any:
+    try:
+        from rapidocr import RapidOCR
+    except ImportError as exc:
+        raise RuntimeError(
+            "RapidOCR is required for OCR. Install backend dependencies with "
+            "`python -m pip install -r apps/api/requirements.txt`."
+        ) from exc
 
-    candidates: list[DigitCandidate] = []
-    for template in load_digit_templates(variant):
-        scores = match_template_scores(source, template.image)
-        if scores.size == 0:
-            continue
+    return RapidOCR()
 
-        ys, xs = np.where(scores >= threshold)
-        for y, x in zip(ys.tolist(), xs.tolist()):
-            candidates.append(
-                DigitCandidate(
-                    digit=template.digit,
-                    score=float(scores[y, x]),
-                    left=int(x),
-                    top=int(y),
-                    width=template.width,
-                    height=template.height,
-                )
+
+def _run_maa_style_ocr(source: np.ndarray) -> Any:
+    engine = _load_ocr_engine()
+    return engine(source, use_det=True, use_cls=True, use_rec=True)
+
+
+def _prepare_ocr_source(source: np.ndarray, *, invert: bool = False) -> np.ndarray:
+    image = _as_uint8_image(source)
+    if invert:
+        image = cv2.bitwise_not(image)
+
+    if _OCR_UPSCALE_FACTOR != 1.0:
+        image = cv2.resize(
+            image,
+            None,
+            fx=_OCR_UPSCALE_FACTOR,
+            fy=_OCR_UPSCALE_FACTOR,
+            interpolation=cv2.INTER_CUBIC,
+        )
+
+    if _OCR_BORDER_PIXELS > 0:
+        border_color = (255, 255, 255) if invert else (0, 0, 0)
+        image = cv2.copyMakeBorder(
+            image,
+            _OCR_BORDER_PIXELS,
+            _OCR_BORDER_PIXELS,
+            _OCR_BORDER_PIXELS,
+            _OCR_BORDER_PIXELS,
+            cv2.BORDER_CONSTANT,
+            value=border_color,
+        )
+
+    return image
+
+
+def _as_uint8_image(source: np.ndarray) -> np.ndarray:
+    image = source
+    if image.dtype != np.uint8:
+        image = np.clip(image, 0, 255).astype(np.uint8)
+
+    if len(image.shape) == 2:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+    return image
+
+
+def _iter_ocr_lines(result: Any) -> list[_OcrLine]:
+    txts = getattr(result, "txts", None)
+    if txts is not None:
+        boxes = getattr(result, "boxes", None)
+        scores = getattr(result, "scores", None)
+        if scores is None:
+            scores = ()
+        return [
+            _OcrLine(
+                text=str(text),
+                score=_score_at(scores, index),
+                box=_box_at(boxes, index),
             )
+            for index, text in enumerate(txts)
+        ]
 
-    return _deduplicate_candidates(candidates)
+    if isinstance(result, tuple) and result and isinstance(result[0], list):
+        return [_legacy_line(item) for item in result[0] if item]
 
-
-def _deduplicate_candidates(candidates: list[DigitCandidate]) -> list[DigitCandidate]:
-    kept: list[DigitCandidate] = []
-    for candidate in sorted(candidates, key=lambda item: (-item.score, item.top, item.left)):
-        if any(_is_same_detection(candidate, existing) for existing in kept):
-            continue
-        kept.append(candidate)
-
-    kept.sort(key=lambda item: (item.center_y, item.left))
-    return kept
+    return []
 
 
-def _build_sequence(candidates: list[DigitCandidate]) -> DigitSequence:
-    left = min(candidate.left for candidate in candidates)
-    top = min(candidate.top for candidate in candidates)
-    right = max(candidate.right for candidate in candidates)
-    bottom = max(candidate.bottom for candidate in candidates)
-    score = sum(candidate.score for candidate in candidates) / len(candidates)
+def _legacy_line(item: Any) -> _OcrLine:
+    if len(item) < 3:
+        return _OcrLine(text="", score=0.0, box=None)
+
+    box, text, score = item[:3]
+    return _OcrLine(text=str(text), score=_as_float(score), box=np.asarray(box, dtype=np.float32))
+
+
+def _build_digit_sequence(line: _OcrLine) -> DigitSequence | None:
+    text = _normalize_digits(line.text)
+    if not text:
+        return None
+
+    left, top, width, height = _line_bounds(line.box)
     return DigitSequence(
-        text="".join(candidate.digit for candidate in candidates),
-        score=score,
+        text=text,
+        score=line.score,
         left=left,
         top=top,
-        width=right - left,
-        height=bottom - top,
+        width=width,
+        height=height,
     )
 
 
-def _is_same_detection(left: DigitCandidate, right: DigitCandidate) -> bool:
-    horizontal_overlap = min(left.right, right.right) - max(left.left, right.left)
-    vertical_overlap = min(left.bottom, right.bottom) - max(left.top, right.top)
-    if horizontal_overlap > 0 and vertical_overlap > 0:
-        return True
+def _normalize_digits(text: str) -> str:
+    if not _DIGIT_RE.search(text):
+        return ""
 
-    max_center_dx = min(left.width, right.width) * 0.5
-    max_center_dy = min(left.height, right.height) * 0.5
-    return abs(left.center_x - right.center_x) <= max_center_dx and abs(left.center_y - right.center_y) <= max_center_dy
+    return _NON_DIGIT_RE.sub("", text)
 
 
-def _group_candidates_by_row(
-    candidates: list[DigitCandidate],
-    row_alignment_ratio: float,
-) -> list[list[DigitCandidate]]:
-    rows: list[_DigitRow] = []
-    for candidate in sorted(candidates, key=lambda item: (item.center_y, item.left)):
-        matching_row = _find_matching_row(rows, candidate, row_alignment_ratio=row_alignment_ratio)
-        if matching_row is None:
-            rows.append(
-                _DigitRow(
-                    candidates=[candidate],
-                    center_y=candidate.center_y,
-                    average_height=float(candidate.height),
-                )
-            )
-            continue
-        matching_row.add(candidate)
+def _line_bounds(box: np.ndarray | None) -> tuple[int, int, int, int]:
+    if box is None or box.size == 0:
+        return 0, 0, 0, 0
 
-    rows.sort(key=lambda row: row.center_y)
-    return [sorted(row.candidates, key=lambda item: item.left) for row in rows]
+    points = np.asarray(box, dtype=np.float32).reshape(-1, 2)
+    left = int(np.floor(points[:, 0].min()))
+    top = int(np.floor(points[:, 1].min()))
+    right = int(np.ceil(points[:, 0].max()))
+    bottom = int(np.ceil(points[:, 1].max()))
+    return left, top, max(0, right - left), max(0, bottom - top)
 
 
-def _find_matching_row(
-    rows: list[_DigitRow],
-    candidate: DigitCandidate,
-    row_alignment_ratio: float,
-) -> _DigitRow | None:
-    for row in rows:
-        tolerance = max(row.average_height, candidate.height) * row_alignment_ratio
-        if abs(candidate.center_y - row.center_y) <= tolerance:
-            return row
-    return None
+def _score_at(scores: Any, index: int) -> float:
+    try:
+        return _as_float(scores[index])
+    except (IndexError, TypeError):
+        return 0.0
 
 
-def _split_row_by_gap(candidates: list[DigitCandidate], max_gap_ratio: float) -> list[list[DigitCandidate]]:
-    if not candidates:
-        return []
+def _box_at(boxes: Any, index: int) -> np.ndarray | None:
+    if boxes is None:
+        return None
 
-    groups: list[list[DigitCandidate]] = [[candidates[0]]]
-    for candidate in candidates[1:]:
-        previous = groups[-1][-1]
-        gap = candidate.left - previous.right
-        max_gap = max(previous.width, candidate.width) * max_gap_ratio
-        if gap > max_gap:
-            groups.append([candidate])
-            continue
-        groups[-1].append(candidate)
+    try:
+        return np.asarray(boxes[index], dtype=np.float32)
+    except (IndexError, TypeError):
+        return None
 
-    return groups
+
+def _as_float(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0

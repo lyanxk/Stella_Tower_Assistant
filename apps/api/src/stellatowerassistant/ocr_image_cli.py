@@ -28,13 +28,13 @@ def main() -> None:
         "--variant",
         choices=("auto", "small", "elevator"),
         default="auto",
-        help="Digit template set to use. Default: auto.",
+        help="Kept for compatibility; RapidOCR does not use template variants. Default: auto.",
     )
     parser.add_argument(
         "--threshold",
         type=float,
-        default=0.92,
-        help="Template match threshold. Higher values reduce false positives. Default: 0.92.",
+        default=0.80,
+        help="OCR confidence threshold. Higher values reduce false positives. Default: 0.80.",
     )
     args = parser.parse_args()
 
@@ -60,28 +60,7 @@ def recognize_sequences_from_image_path(
     if variant != "auto":
         return recognize_digit_sequences(image, variant=variant, threshold=threshold)
 
-    results_by_variant = {
-        "small": recognize_digit_sequences(image, variant="small", threshold=threshold),
-        "elevator": recognize_digit_sequences(image, variant="elevator", threshold=threshold),
-    }
-    return choose_best_variant_result(results_by_variant)
-
-
-def choose_best_variant_result(results_by_variant: dict[str, list[str]]) -> list[str]:
-    best_result: list[str] = []
-    best_score = (-1, 0, -1)
-
-    for variant, result in results_by_variant.items():
-        score = (
-            sum(len(group) for group in result),
-            -len(result),
-            1 if variant == "elevator" else 0,
-        )
-        if score > best_score:
-            best_score = score
-            best_result = result
-
-    return best_result
+    return recognize_digit_sequences(image, variant="small", threshold=threshold)
 
 
 if __name__ == "__main__":

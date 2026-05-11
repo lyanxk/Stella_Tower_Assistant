@@ -1,5 +1,5 @@
 <template>
-  <AppShell :status="null" :logs="[]">
+  <AppShell :status="status" :logs="logs">
     <section class="panel">
       <div class="panel__header">
         <strong>Template Inventory</strong>
@@ -24,9 +24,11 @@
 import { onMounted, ref } from "vue";
 import AppShell from "@/app/layouts/AppShell.vue";
 import { apiClient } from "@/shared/api/client";
+import { useRuntimeEvents } from "@/shared/api/useRuntimeEvents";
 import type { TemplateInfo } from "@/shared/types/api";
 
 const templates = ref<TemplateInfo[]>([]);
+const { status, logs } = useRuntimeEvents();
 
 onMounted(async () => {
   templates.value = await apiClient.getTemplates();

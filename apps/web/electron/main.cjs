@@ -1,5 +1,5 @@
 const path = require("node:path");
-const { app, BrowserWindow, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 
 const devServerUrl = process.env.VITE_DEV_SERVER_URL;
 
@@ -15,6 +15,7 @@ function createMainWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      preload: path.join(__dirname, "preload.cjs"),
       sandbox: true,
     },
   });
@@ -32,6 +33,11 @@ function createMainWindow() {
 }
 
 app.whenReady().then(() => {
+  ipcMain.handle("app:quit", () => {
+    setImmediate(() => app.quit());
+    return true;
+  });
+
   createMainWindow();
 
   app.on("activate", () => {

@@ -5,7 +5,7 @@ param(
     [ValidateSet("auto", "screen", "emulator")]
     [string]$CaptureMode = "auto",
 
-    [double]$Threshold = 0.98,
+    [double]$Threshold = 0.80,
 
     [string]$CaptureHotkey = "f8",
 

@@ -1,89 +1,33 @@
 <template>
-  <AppShell :status="status" :logs="logs">
-    <div class="page-grid">
+  <AppShell :status="status">
+    <div class="dashboard">
       <StatusCards :status="status" />
       <RunControlPanel
         @start="runAction(apiClient.start)"
         @pause="runAction(apiClient.pause)"
         @resume="runAction(apiClient.resume)"
         @stop="runAction(apiClient.stop)"
-        @skip="runAction(apiClient.skipInitial)"
       />
-      <HealthPanel :health="health" :emulator-connected="Boolean(windowInfo?.connected)" />
-      <SettingsPanel :settings="settings" />
-      <ScreenshotPreview :image-base64="screenshotBase64" @refresh="loadScreenshot" />
+      <LogPanel :logs="logs" />
     </div>
   </AppShell>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
 import AppShell from "@/app/layouts/AppShell.vue";
-import SettingsPanel from "@/features/config-editor/SettingsPanel.vue";
-import HealthPanel from "@/features/live-status/HealthPanel.vue";
 import RunControlPanel from "@/features/run-control/RunControlPanel.vue";
-import ScreenshotPreview from "@/features/screenshot-preview/ScreenshotPreview.vue";
 import { apiClient } from "@/shared/api/client";
-import { createEventSocket } from "@/shared/api/events";
-import type { AutomationLogEntry, AutomationStatus, SettingsResponse } from "@/shared/types/api";
+import { useRuntimeEvents } from "@/shared/api/useRuntimeEvents";
+import LogPanel from "@/widgets/log-panel/LogPanel.vue";
 import StatusCards from "@/widgets/status-cards/StatusCards.vue";
 
-const status = ref<AutomationStatus | null>(null);
-const logs = ref<AutomationLogEntry[]>([]);
-const settings = ref<SettingsResponse | null>(null);
-const screenshotBase64 = ref<string | null>(null);
-const health = ref<Record<string, unknown> | null>(null);
-const windowInfo = ref<Record<string, unknown> | null>(null);
-let socket: WebSocket | null = null;
-
-function debugRuntimeSnapshot(source: string, nextStatus: AutomationStatus | null) {
-  console.log("[StellaTowerAssistant]", source, {
-    elevatorFloor: nextStatus?.elevator_floor ?? null,
-    currentGold: nextStatus?.current_money ?? null,
-    isRunning: nextStatus?.is_running ?? null,
-    lastMessage: nextStatus?.last_message ?? null,
-  });
-}
-
-async function loadBaseData() {
-  status.value = await apiClient.getStatus();
-  logs.value = await apiClient.getLogs();
-  settings.value = await apiClient.getSettings();
-  health.value = await apiClient.getHealth();
-  windowInfo.value = await apiClient.getWindow();
-  debugRuntimeSnapshot("loadBaseData", status.value);
-}
-
-async function loadScreenshot() {
-  try {
-    const screenshot = await apiClient.getScreenshot();
-    screenshotBase64.value = screenshot.image_base64;
-  } catch {
-    screenshotBase64.value = null;
-  }
-}
+const { status, logs, loadRuntimeSnapshot } = useRuntimeEvents({
+  logLimit: 120,
+  refreshIntervalMs: 1000,
+});
 
 async function runAction(action: () => Promise<unknown>) {
   await action();
-  await loadBaseData();
+  await loadRuntimeSnapshot();
 }
-
-onMounted(async () => {
-  await loadBaseData();
-  await loadScreenshot();
-  socket = createEventSocket((message) => {
-    if (message.type === "status") {
-      status.value = message.data;
-      debugRuntimeSnapshot("websocket:status", status.value);
-    } else if (message.type === "logs") {
-      logs.value = message.data;
-    } else {
-      logs.value = [message.data, ...logs.value].slice(0, 100);
-    }
-  });
-});
-
-onBeforeUnmount(() => {
-  socket?.close();
-});
 </script>

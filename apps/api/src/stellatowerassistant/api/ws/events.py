@@ -27,6 +27,7 @@ async def event_stream(websocket: WebSocket) -> None:
                 continue
 
             await websocket.send_json({"type": "event", "data": event.asdict()})
+            await websocket.send_json({"type": "status", "data": automation_service.get_status()})
     except WebSocketDisconnect:
         return
     finally:

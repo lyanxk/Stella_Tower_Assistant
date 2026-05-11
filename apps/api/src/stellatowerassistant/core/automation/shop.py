@@ -3,45 +3,92 @@ from __future__ import annotations
 import time
 
 from ..config.settings import (
-    FINAL_SHOP_REFRESH_LIMIT,
+    FINAL_SHOP_ITEM_TEMPLATES,
     HUNDRED_MATCH_THRESHOLD,
     IMAGE_MATCH_THRESHOLD,
-    SELECT_CONFIRM_TIMEOUT,
-    SELECT_MATCH_THRESHOLD,
+    REGULAR_SHOP_ITEM_TEMPLATES,
     SHOP_BUBBLE_X_OFFSET,
     SHOP_BUBBLE_Y_FACTORS,
+    SHOP_EXTRA_UPGRADE_LIMIT,
+    SHOP_REFRESH_LIMIT,
+    SHOP_UPGRADE_TIMES,
     SOLD_OUT_FILTER_DISTANCE,
     SOLD_OUT_MATCH_THRESHOLD,
-    THUMB_REWARD_TIMEOUT,
 )
 from ..runtime.events import emit_log
 from ..runtime.state import state
 from .actions import click_blank, click_match_center, click_relative
+from .potential import handle_potential_selection
 from .readings import observe_run_reading
 from .vision import Point, capture_emulator, find_all_matches, load_template, match_template
 
 
 def handle_shop(final_shop: bool = False) -> None:
-    click_bubble(1)
-    take_thumb_reward()
-    time.sleep(1.0)
+    if final_shop:
+        emit_log("Handling final shop flow.", scope="shop")
+        handle_final_shop()
+        return
 
-    click_bubble(1)
-    take_thumb_reward()
-    time.sleep(1.0)
+    emit_log("Handling regular shop flow.", scope="shop")
+    handle_regular_shop()
 
+
+def handle_regular_shop() -> None:
+    open_purchase_page()
+    purchase_items(REGULAR_SHOP_ITEM_TEMPLATES)
+    quit_shopping()
+    upgrade_times(SHOP_UPGRADE_TIMES)
+    exit_shop()
+
+
+def quit_shopping() -> None:
+    back_template = load_template("back")
+    if back_template is None:
+        emit_log("Back template not found; cannot quit shopping page.", level="warning", scope="shop")
+        return
+
+    start_time = time.time()
+    while time.time() - start_time < 8.0:
+        state.check_pause_and_running()
+        image, window_rect = capture_emulator()
+        observe_run_reading(image)
+
+        if is_shop_layer(image):
+            emit_log("Returned to shop layer.", scope="shop")
+            return
+
+        back_match = match_template(image, back_template, threshold=IMAGE_MATCH_THRESHOLD)
+        if back_match:
+            if not is_shopping_page(image):
+                emit_log("Back marker found outside shopping page; leaving it untouched.", scope="shop")
+                return
+
+            click_match_center(back_match, window_rect, delay=0.5)
+            continue
+
+        time.sleep(0.2)
+
+    emit_log("Timed out while waiting to return to shop layer.", level="warning", scope="shop")
+
+
+def handle_final_shop() -> None:
+    upgrade_times(SHOP_UPGRADE_TIMES)
+    open_purchase_page()
+
+    for refresh_round in range(SHOP_REFRESH_LIMIT + 1):
+        purchase_items(FINAL_SHOP_ITEM_TEMPLATES)
+        if refresh_round >= SHOP_REFRESH_LIMIT:
+            break
+        if not refresh_shop():
+            break
+
+    quit_shopping()
+    upgrade_until_no_money()
+    exit_shop(confirm_exit=True)
+
+
+def open_purchase_page() -> None:
     click_bubble(0)
-    purchase_items()
-    time.sleep(1.0)
-
-    if final_shop:
-        handle_final_shop_refreshes()
-    else:
-        exit_regular_shop()
-
-    click_bubble(2)
-    if final_shop:
-        confirm_final_shop_exit()
 
 
 def click_bubble(index: int) -> None:
@@ -50,203 +97,212 @@ def click_bubble(index: int) -> None:
     click_relative(SHOP_BUBBLE_X_OFFSET, bubble_y, window_rect, delay=0.8)
 
 
-def purchase_items() -> None:
-    purchase_note_items()
-    purchase_hundred_items()
+def purchase_items(template_names: tuple[str, ...]) -> int:
+    bought_count = 0
+    for template_name in template_names:
+        bought_count += purchase_item_type(template_name)
+    return bought_count
 
 
-def purchase_note_items() -> None:
-    note_template = load_template("note")
-    if note_template is None:
-        return
+def purchase_item_type(template_name: str) -> int:
+    item_template = load_template(template_name)
+    if item_template is None:
+        return 0
 
-    while True:
-        state.check_pause_and_running()
-        image, _ = capture_emulator()
-        observe_run_reading(image)
-        available_notes = find_available_positions(image, note_template, IMAGE_MATCH_THRESHOLD)
-        if not available_notes:
-            break
-
-        bought_any = False
-        for match in available_notes:
-            _, window_rect = capture_emulator()
-            click_match_center(match, window_rect, delay=0.25)
-
-            if not click_buy_button(delay=0.35):
-                continue
-
-            dialog_rect = click_confirm_if_present(delay=0.2)
-            click_blank(dialog_rect, times=20, delay=0.05)
-            bought_any = True
-            break
-
-        if not bought_any:
-            emit_log("debug: no more purchasable notes found, breaking out of loop", scope="shop")
-            break
-
-        time.sleep(0.2)
-
-
-def purchase_hundred_items() -> None:
-    hundred_template = load_template("hundred")
-    if hundred_template is None:
-        return
+    threshold = _threshold_for_item(template_name)
+    bought_count = 0
 
     while True:
         state.check_pause_and_running()
-        image, _ = capture_emulator()
-        observe_run_reading(image)
-        available_hundreds = find_available_positions(image, hundred_template, HUNDRED_MATCH_THRESHOLD)
-        if not available_hundreds:
-            emit_log("debug: no more purchasable 100s found, breaking out of loop", scope="shop")
+        image, window_rect = capture_emulator()
+        available_items = find_available_positions(image, item_template, threshold)
+        if not available_items:
             break
 
         bought_one = False
-        for match in available_hundreds:
-            _, window_rect = capture_emulator()
-            click_match_center(match, window_rect, delay=0.3)
-
-            if not click_buy_button(delay=0.4):
+        for match in available_items:
+            click_match_center(match, window_rect)
+            if not click_buy_button():
+                if handle_not_enough_money():
+                    return bought_count
+                click_blank(window_rect)
                 continue
 
-            dialog_rect = click_confirm_if_present(delay=0.2)
-            click_blank(dialog_rect, times=3)
-            time.sleep(0.8)
-            take_thumb_reward()
+            if handle_not_enough_money():
+                return bought_count
+            click_confirm_if_present(delay=0.2)
+            if handle_not_enough_money():
+                return bought_count
+            handle_potential_selection()
+            bought_count += 1
             bought_one = True
             break
 
         if not bought_one:
-            emit_log("debug: found 100s but none could be bought (no buy button), breaking to avoid loop", scope="shop")
             break
 
         time.sleep(0.2)
 
+    if bought_count:
+        emit_log(f"Bought {bought_count} item(s) for template {template_name}.", scope="shop")
+    return bought_count
 
-def take_thumb_reward(timeout: float = THUMB_REWARD_TIMEOUT) -> None:
-    select_template = load_template("select")
-    confirm_template = load_template("select_confirm")
-    if select_template is None or confirm_template is None:
-        return
 
-    start_time = time.time()
-    while time.time() - start_time < timeout:
+def upgrade_times(times: int) -> None:
+    for index in range(times):
         state.check_pause_and_running()
-        image, window_rect = capture_emulator()
-        observe_run_reading(image)
-        select_match = match_template(image, select_template, threshold=SELECT_MATCH_THRESHOLD)
-        if not select_match:
-            time.sleep(0.2)
-            continue
-
-        click_match_center(select_match, window_rect, delay=0.3)
-
-        confirm_start = time.time()
-        while time.time() - confirm_start < SELECT_CONFIRM_TIMEOUT:
-            state.check_pause_and_running()
-            confirm_image, confirm_rect = capture_emulator()
-            confirm_match = match_template(confirm_image, confirm_template, threshold=SELECT_MATCH_THRESHOLD)
-            if confirm_match:
-                click_match_center(confirm_match, confirm_rect, delay=0.2)
-                click_blank(confirm_rect)
-                return
-            time.sleep(0.2)
-        return
+        emit_log(f"Shop upgrade {index + 1}/{times}", scope="shop")
+        open_upgrade_page()
+        if handle_not_enough_money():
+            return
+        handle_potential_selection()
+        time.sleep(0.3)
 
 
-def handle_final_shop_refreshes() -> None:
+def upgrade_until_no_money(limit: int = SHOP_EXTRA_UPGRADE_LIMIT) -> None:
+    for index in range(limit):
+        state.check_pause_and_running()
+        emit_log(f"Final shop extra upgrade attempt {index + 1}", scope="shop")
+        open_upgrade_page()
+        if handle_not_enough_money():
+            emit_log("No enough money for more upgrades.", scope="shop")
+            return
+        if not handle_potential_selection(timeout=4.0):
+            emit_log("No potential prompt after upgrade, stopping extra upgrades.", scope="shop")
+            return
+        time.sleep(0.3)
+
+
+def refresh_shop() -> bool:
+    image, window_rect = capture_emulator()
     refresh_template = load_template("refresh")
-    back_template = load_template("back")
-    if refresh_template is None:
-        return
+    refresh_match = match_template(image, refresh_template, threshold=IMAGE_MATCH_THRESHOLD) if refresh_template is not None else None
+    if not refresh_match:
+        return False
 
-    refresh_count = 0
-    while refresh_count < FINAL_SHOP_REFRESH_LIMIT:
-        state.check_pause_and_running()
-        image, window_rect = capture_emulator()
-        observe_run_reading(image)
-        refresh_match = match_template(image, refresh_template, threshold=IMAGE_MATCH_THRESHOLD)
-        if not refresh_match:
-            break
+    emit_log("Refreshing final shop.", scope="shop")
+    click_match_center(refresh_match, window_rect, delay=0.5)
+    return True
 
-        click_match_center(refresh_match, window_rect, delay=0.3)
-        time.sleep(0.1)
-        purchase_items()
-        refresh_count += 1
 
-    if refresh_count != FINAL_SHOP_REFRESH_LIMIT or back_template is None:
-        return
+def exit_shop(confirm_exit: bool = False) -> None:
+    emit_log("Exiting shop.", scope="shop")
+    if not click_back_if_present():
+        click_bubble(2)
+    if confirm_exit:
+        confirm_exit_if_present()
 
-    emit_log("debug: reached final shop refresh limit, exiting shop", scope="shop")
+
+def open_upgrade_page() -> None:
     image, window_rect = capture_emulator()
     observe_run_reading(image)
+    strengthen_template = load_template("strengthen")
+    strengthen_match = (
+        match_template(image, strengthen_template, threshold=IMAGE_MATCH_THRESHOLD)
+        if strengthen_template is not None
+        else None
+    )
+    if strengthen_match:
+        click_match_center(strengthen_match, window_rect, delay=0.5)
+        return
+
+    click_bubble(1)
+
+
+def click_back_if_present() -> bool:
+    back_template = load_template("back")
+    if back_template is None:
+        return False
+
+    image, window_rect = capture_emulator()
+    observe_run_reading(image)
+    if not is_shopping_page(image):
+        return False
+
     back_match = match_template(image, back_template, threshold=IMAGE_MATCH_THRESHOLD)
     if not back_match:
-        return
+        return False
 
     click_blank(window_rect)
     click_match_center(back_match, window_rect, delay=0.5)
-    emit_log("debug: quit shop after refresh limit", scope="shop")
+    return True
 
 
-def exit_regular_shop() -> None:
-    emit_log("Purchase process completed. Checking whether the shop can be closed...", scope="shop")
-    back_template = load_template("back")
-    if back_template is None:
-        return
-
-    image, window_rect = capture_emulator()
-    observe_run_reading(image)
-    back_match = match_template(image, back_template, threshold=IMAGE_MATCH_THRESHOLD)
-    if back_match:
-        click_match_center(back_match, window_rect, delay=0.5)
-        emit_log("debug: quit shop", scope="shop")
-        return
-
-    emit_log("debug: no back button found, pause", level="warning", scope="shop")
-    state.toggle_pause()
+def is_shop_layer(image) -> bool:
+    for template_name in ("enter_shop", "strengthen", "leave", "shop"):
+        template = load_template(template_name)
+        if template is None:
+            continue
+        if match_template(image, template, threshold=IMAGE_MATCH_THRESHOLD):
+            return True
+    return False
 
 
-def confirm_final_shop_exit() -> None:
-    emit_log("debug: final shop - checking for confirm button", scope="shop")
-    confirm_template = load_template("confirm")
-    if confirm_template is None:
-        return
+def is_shopping_page(image) -> bool:
+    shopping_template_names = (
+        *REGULAR_SHOP_ITEM_TEMPLATES,
+        *FINAL_SHOP_ITEM_TEMPLATES,
+        "buy",
+        "sold_out",
+        "not_enough_money",
+    )
+    for template_name in dict.fromkeys(shopping_template_names):
+        template = load_template(template_name)
+        if template is None:
+            continue
+        if match_template(image, template, threshold=_threshold_for_item(template_name)):
+            return True
+    return False
 
-    image, window_rect = capture_emulator()
-    observe_run_reading(image)
-    confirm_match = match_template(image, confirm_template, threshold=IMAGE_MATCH_THRESHOLD)
-    if confirm_match:
-        click_match_center(confirm_match, window_rect, delay=0.5)
 
-
-def click_buy_button(delay: float) -> bool:
+def click_buy_button() -> bool:
     buy_template = load_template("buy")
     if buy_template is None:
         return False
 
     image, window_rect = capture_emulator()
-    observe_run_reading(image)
     buy_match = match_template(image, buy_template, threshold=IMAGE_MATCH_THRESHOLD)
     if not buy_match:
         return False
 
-    click_match_center(buy_match, window_rect, delay=delay)
+    click_match_center(buy_match, window_rect)
     return True
 
 
-def click_confirm_if_present(delay: float) -> tuple[int, int, int, int]:
+def click_confirm_if_present(delay: float) -> bool:
     confirm_template = load_template("confirm")
     image, window_rect = capture_emulator()
     observe_run_reading(image)
     if confirm_template is None:
-        return window_rect
+        return False
 
     confirm_match = match_template(image, confirm_template, threshold=IMAGE_MATCH_THRESHOLD)
-    if confirm_match:
-        click_match_center(confirm_match, window_rect, delay=delay)
-    return window_rect
+    if not confirm_match:
+        return False
+
+    click_match_center(confirm_match, window_rect, delay=delay)
+    return True
+
+
+def confirm_exit_if_present() -> None:
+    click_confirm_if_present(delay=0.5)
+
+
+def handle_not_enough_money() -> bool:
+    not_enough_template = load_template("not_enough_money")
+    if not_enough_template is None:
+        return False
+
+    image, window_rect = capture_emulator()
+    observe_run_reading(image)
+    not_enough_match = match_template(image, not_enough_template, threshold=IMAGE_MATCH_THRESHOLD)
+    if not not_enough_match:
+        return False
+
+    emit_log("Not enough money prompt detected.", scope="shop")
+    click_confirm_if_present(delay=0.2)
+    click_blank(window_rect)
+    return True
 
 
 def find_available_positions(image, item_template, threshold: float) -> list[Point]:
@@ -264,3 +320,9 @@ def find_available_positions(image, item_template, threshold: float) -> list[Poi
 
 def is_near_any(match: Point, other_matches: list[Point], distance: int = SOLD_OUT_FILTER_DISTANCE) -> bool:
     return any(abs(match[0] - other[0]) + abs(match[1] - other[1]) <= distance for other in other_matches)
+
+
+def _threshold_for_item(template_name: str) -> float:
+    if template_name == "hundred":
+        return HUNDRED_MATCH_THRESHOLD
+    return IMAGE_MATCH_THRESHOLD

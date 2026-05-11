@@ -6,19 +6,19 @@ import pyautogui
 
 from ..config.settings import (
     BLANK_CLICK_X_OFFSET,
+    FALLBACK_SECOND_CHOICE_Y_RATIO,
     FALLBACK_CHOICE_X_RATIO,
     FAST_CLICK_DELAY,
     FAST_CLICK_DURATION,
     FAST_CLICK_X_OFFSET,
     IMAGE_MATCH_THRESHOLD,
-    INITIAL_WAIT_TEMPLATES,
     MATCH_POLL_INTERVAL,
     SELECT_CONFIRM_TIMEOUT,
     SELECT_MATCH_THRESHOLD,
 )
 from ..runtime.events import emit_log
 from ..runtime.state import state
-from .vision import Point, WindowRect, capture_emulator, load_template, match_template, require_template
+from .vision import Point, WindowRect, capture_emulator, find_all_matches, load_template, match_template, require_template
 
 
 def click_match_center(match: Point, window_rect: WindowRect, delay: float = 0.0) -> None:
@@ -53,14 +53,9 @@ def wait_and_click(
 ) -> bool:
     template = require_template(template_name)
     start_time = time.time()
-    is_initial_wait = template_name in INITIAL_WAIT_TEMPLATES
 
     while time.time() - start_time < timeout:
         state.check_pause_and_running()
-        if is_initial_wait and state.skip_initial_wait:
-            emit_log(f"[Skip] Skip waiting for {template_name}", scope="automation")
-            return False
-
         image, window_rect = capture_emulator()
         match = match_template(image, template, threshold)
         if match:
@@ -146,3 +141,24 @@ def select_choice_or_first() -> None:
     emit_log(f"[Debug] fallback click at ({fallback_x}, {fallback_y})", scope="automation")
     state.check_pause_and_running()
     pyautogui.click(fallback_x, fallback_y)
+
+
+def select_second_choice() -> bool:
+    choice_template = load_template("choice")
+    image, window_rect = capture_emulator()
+
+    matches = find_all_matches(image, choice_template, IMAGE_MATCH_THRESHOLD) if choice_template is not None else []
+    if len(matches) >= 2:
+        matches.sort(key=lambda point: (point[1], point[0]))
+        choice_match = matches[1]
+        emit_log(f"[Debug] choice matched at {choice_match}", scope="automation")
+        click_match_center(choice_match, window_rect, delay=0.3)
+        return True
+
+    left, top, width, height = window_rect
+    fallback_x = left + int(width * FALLBACK_CHOICE_X_RATIO)
+    fallback_y = top + int(height * FALLBACK_SECOND_CHOICE_Y_RATIO)
+    emit_log(f"[Debug] fallback second choice click at ({fallback_x}, {fallback_y})", scope="automation")
+    state.check_pause_and_running()
+    pyautogui.click(fallback_x, fallback_y)
+    return True

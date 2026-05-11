@@ -1,15 +1,13 @@
 export type AutomationStatus = {
   is_running: boolean;
   is_paused: boolean;
-  skip_initial_wait: boolean;
   current_run: number;
   max_runs: number;
   last_error: string | null;
   last_message: string;
   started_at: string | null;
   finished_at: string | null;
-  elevator_floor: number | null;
-  current_money: number | null;
+  current_gold: number | null;
   thread_alive: boolean;
 };
 

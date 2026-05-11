@@ -47,13 +47,6 @@ class AutomationService:
         state.stop()
         return True, "Stop requested."
 
-    def skip_initial_wait(self) -> tuple[bool, str]:
-        if not self._thread_alive():
-            return False, "Automation is not running."
-
-        state.mark_skip_initial()
-        return True, "Initial waits will be skipped."
-
     def get_status(self) -> dict[str, object]:
         return state.snapshot(thread_alive=self._thread_alive())
 

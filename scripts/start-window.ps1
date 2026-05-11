@@ -13,6 +13,7 @@ $backendUrl = "http://127.0.0.1:8765/health"
 $frontendUrl = "http://127.0.0.1:5173"
 $electronExe = Join-Path $webDir "node_modules\.bin\electron.cmd"
 $electronRuntimeExe = Join-Path $webDir "node_modules\electron\dist\electron.exe"
+$startedProcesses = @()
 
 function Test-HttpReady {
     param([string]$Url)
@@ -63,6 +64,25 @@ function Install-ElectronRuntime {
     }
 }
 
+function Stop-ProcessTree {
+    param([int]$ProcessId)
+
+    try {
+        $children = Get-CimInstance Win32_Process -Filter "ParentProcessId = $ProcessId"
+        foreach ($child in $children) {
+            Stop-ProcessTree -ProcessId $child.ProcessId
+        }
+
+        $process = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+        if ($process) {
+            Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
+        }
+    }
+    catch {
+        Write-Host "Failed to stop process tree rooted at PID ${ProcessId}: $_" -ForegroundColor DarkYellow
+    }
+}
+
 if (-not (Test-Path $pythonExe)) {
     throw "Python virtual environment not found: $pythonExe"
 }
@@ -86,35 +106,47 @@ if (-not (Test-Path $electronRuntimeExe)) {
     Install-ElectronRuntime
 }
 
-if (-not $NoBackend) {
-    if (Test-HttpReady -Url $backendUrl) {
-        Write-Host "Backend API is already running." -ForegroundColor DarkGray
+try {
+    if (-not $NoBackend) {
+        if (Test-HttpReady -Url $backendUrl) {
+            Write-Host "Backend API is already running." -ForegroundColor DarkGray
+        }
+        else {
+            Write-Host "Starting backend API..." -ForegroundColor Green
+            $backendCommand = "Set-Location '$apiDir'; `$env:PYTHONPATH='src'; & '$pythonExe' -m stellatowerassistant.cli serve"
+            $backendProcess = Start-Process powershell -WindowStyle Hidden -WorkingDirectory $apiDir -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $backendCommand -PassThru
+            $startedProcesses += $backendProcess
+            Wait-HttpReady -Url $backendUrl -Name "Backend API"
+        }
+    }
+
+    if (Test-HttpReady -Url $frontendUrl) {
+        Write-Host "Frontend dev server is already running." -ForegroundColor DarkGray
     }
     else {
-        Write-Host "Starting backend API..." -ForegroundColor Green
-        $backendCommand = "Set-Location '$apiDir'; `$env:PYTHONPATH='src'; & '$pythonExe' -m stellatowerassistant.cli serve"
-        Start-Process powershell -WindowStyle Hidden -WorkingDirectory $apiDir -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $backendCommand | Out-Null
-        Wait-HttpReady -Url $backendUrl -Name "Backend API"
+        Write-Host "Starting frontend dev server..." -ForegroundColor Green
+        $frontendCommand = "Set-Location '$webDir'; npm.cmd run dev -- --host 127.0.0.1 --port 5173"
+        $frontendProcess = Start-Process powershell -WindowStyle Hidden -WorkingDirectory $webDir -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $frontendCommand -PassThru
+        $startedProcesses += $frontendProcess
+        Wait-HttpReady -Url $frontendUrl -Name "Frontend dev server"
+    }
+
+    $env:VITE_DEV_SERVER_URL = $frontendUrl
+
+    Write-Host "Opening Stella Tower Assistant in an Electron window..." -ForegroundColor Cyan
+    Push-Location $webDir
+    try {
+        & $electronExe .
+    }
+    finally {
+        Pop-Location
     }
 }
-
-if (Test-HttpReady -Url $frontendUrl) {
-    Write-Host "Frontend dev server is already running." -ForegroundColor DarkGray
-}
-else {
-    Write-Host "Starting frontend dev server..." -ForegroundColor Green
-    $frontendCommand = "Set-Location '$webDir'; npm.cmd run dev -- --host 127.0.0.1 --port 5173"
-    Start-Process powershell -WindowStyle Hidden -WorkingDirectory $webDir -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $frontendCommand | Out-Null
-    Wait-HttpReady -Url $frontendUrl -Name "Frontend dev server"
-}
-
-$env:VITE_DEV_SERVER_URL = $frontendUrl
-
-Write-Host "Opening Stella Tower Assistant in an Electron window..." -ForegroundColor Cyan
-Push-Location $webDir
-try {
-    & $electronExe .
-}
 finally {
-    Pop-Location
+    if ($startedProcesses.Count -gt 0) {
+        Write-Host "Stopping services started by this window session..." -ForegroundColor Yellow
+        foreach ($process in @($startedProcesses | Sort-Object Id -Descending)) {
+            Stop-ProcessTree -ProcessId $process.Id
+        }
+    }
 }

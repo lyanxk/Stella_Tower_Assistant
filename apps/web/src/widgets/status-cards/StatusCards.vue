@@ -1,29 +1,24 @@
 <template>
   <section class="status-grid">
     <article class="status-card accent">
-      <span>Automation</span>
-      <strong>{{ status?.is_running ? "Running" : "Standby" }}</strong>
-      <small>{{ status?.last_message ?? "No runtime data" }}</small>
+      <span>自动化状态</span>
+      <strong>{{ status?.is_running ? "运行中" : "待机" }}</strong>
+      <small>{{ status?.last_message ?? "暂无运行数据" }}</small>
     </article>
     <article class="status-card">
-      <span>Progress</span>
+      <span>运行进度</span>
       <strong>{{ status ? `${status.current_run}/${status.max_runs || 0}` : "--" }}</strong>
-      <small>Current run / configured max runs</small>
+      <small>当前轮次 / 最大轮次</small>
     </article>
     <article class="status-card">
-      <span>Pause State</span>
-      <strong>{{ status?.is_paused ? "Paused" : "Live" }}</strong>
-      <small>Skip initial: {{ status?.skip_initial_wait ? "enabled" : "off" }}</small>
+      <span>暂停状态</span>
+      <strong>{{ status?.is_paused ? "已暂停" : "实时" }}</strong>
+      <small>运行暂停 / 继续状态</small>
     </article>
     <article class="status-card">
-      <span>Elevator Floor</span>
-      <strong>{{ formatValue(status?.elevator_floor) }}</strong>
-      <small>Latest OCR floor reading</small>
-    </article>
-    <article class="status-card">
-      <span>Money</span>
-      <strong>{{ formatValue(status?.current_money) }}</strong>
-      <small>Latest OCR money reading</small>
+      <span>当前金币</span>
+      <strong>{{ formatValue(status?.current_gold) }}</strong>
+      <small>最新 OCR 金币读数</small>
     </article>
   </section>
 </template>

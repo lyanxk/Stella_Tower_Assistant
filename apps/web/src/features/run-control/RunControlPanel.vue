@@ -1,15 +1,14 @@
 <template>
   <section class="panel">
     <div class="panel__header">
-      <strong>Run Control</strong>
-      <span>Backend actions</span>
+      <strong>运行控制</strong>
+      <span>后端动作</span>
     </div>
     <div class="button-row">
-      <button class="btn primary" @click="$emit('start')">Start</button>
-      <button class="btn" @click="$emit('pause')">Pause</button>
-      <button class="btn" @click="$emit('resume')">Resume</button>
-      <button class="btn danger" @click="$emit('stop')">Stop</button>
-      <button class="btn subtle" @click="$emit('skip')">Skip Initial</button>
+      <button class="btn primary" @click="$emit('start')">启动</button>
+      <button class="btn" @click="$emit('pause')">暂停</button>
+      <button class="btn" @click="$emit('resume')">继续</button>
+      <button class="btn danger" @click="$emit('stop')">停止</button>
     </div>
   </section>
 </template>
@@ -20,6 +19,5 @@ defineEmits<{
   pause: [];
   resume: [];
   stop: [];
-  skip: [];
 }>();
 </script>

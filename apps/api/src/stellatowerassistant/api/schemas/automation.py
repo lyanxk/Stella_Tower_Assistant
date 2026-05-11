@@ -13,14 +13,12 @@ class ActionResponse(BaseModel):
 class AutomationStatus(BaseModel):
     is_running: bool
     is_paused: bool
-    skip_initial_wait: bool
     current_run: int
     max_runs: int
     last_error: str | None = None
     last_message: str
     started_at: str | None = None
     finished_at: str | None = None
-    elevator_floor: int | None = None
     current_gold: int | None = None
     thread_alive: bool
 

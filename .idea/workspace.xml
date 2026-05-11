@@ -5,18 +5,69 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="55ced7f0-0501-432b-9fbe-d490843c9746" name="更改" comment="feat:素材更新">
+      <change afterPath="$PROJECT_DIR$/apps/web/src/shared/api/useRuntimeEvents.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/0_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/0_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/1_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/1_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/2_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/2_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/3_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/3_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/4_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/4_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/5_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/5_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/6_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/6_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/7_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/7_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/8_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/8_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/9_e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/assets/templates/9_s.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/automation.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/routes/automation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/schemas/automation.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/schemas/automation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/ws/events.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/api/ws/events.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/actions.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/actions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/ocr.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/ocr.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/readings.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/readings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/run_loop.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/run_loop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/shop.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/automation/shop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/config/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/config/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/runtime/state.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/runtime/state.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/services/automation_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/core/services/automation_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/ocr_capture.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/ocr_capture.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/ocr_image_cli.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant/ocr_image_cli.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant_api.egg-info/PKG-INFO" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant_api.egg-info/PKG-INFO" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant_api.egg-info/SOURCES.txt" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant_api.egg-info/SOURCES.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/stellatowerassistant_api.egg-info/requires.txt" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/stellatowerassistant_api.egg-info/requires.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/uv.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/electron/main.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/electron/main.cjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/app/layouts/AppShell.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/layouts/AppShell.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web/src/app/router/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/router/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/features/run-control/RunControlPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/features/run-control/RunControlPanel.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web/src/pages/dashboard/DashboardPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/dashboard/DashboardPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/logs/LogsPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/logs/LogsPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/settings/SettingsPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/settings/SettingsPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/templates/TemplatesPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/templates/TemplatesPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/shared/api/client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/shared/api/client.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web/src/shared/styles/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/shared/styles/main.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web/src/shared/types/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/shared/types/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/widgets/log-panel/LogPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/widgets/log-panel/LogPanel.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web/src/widgets/status-cards/StatusCards.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/widgets/status-cards/StatusCards.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/vite.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/start-dev.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/start-dev.ps1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/widgets/topbar/TopBar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/widgets/topbar/TopBar.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/api-contract.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/api-contract.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/start-ocr-capture.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/start-ocr-capture.ps1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/start-window.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/start-window.ps1" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,7 +80,7 @@
     </persistenceIdMap>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="137" />
+    <option name="cachedIndexableFilesCount" value="2024" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -94,7 +145,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;ts.external.directory.path&quot;: &quot;E:\\Project\\Python\\StellaTowerAssistant\\apps\\web\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -158,6 +209,11 @@
       <workItem from="1777249722844" duration="342000" />
       <workItem from="1777250132510" duration="386000" />
       <workItem from="1777251371369" duration="861000" />
+      <workItem from="1777382066288" duration="132000" />
+      <workItem from="1778132424687" duration="12775000" />
+      <workItem from="1778202730464" duration="4543000" />
+      <workItem from="1778459842782" duration="3120000" />
+      <workItem from="1778464755531" duration="1476000" />
     </task>
     <task id="LOCAL-00001" summary="大体完成">
       <option name="closed" value="true" />

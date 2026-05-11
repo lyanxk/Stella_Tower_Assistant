@@ -39,7 +39,7 @@ def main() -> None:
         "--variant",
         choices=("auto", "small", "elevator"),
         default="auto",
-        help="Which digit template set to use. Default: auto.",
+        help="Kept for compatibility; RapidOCR does not use template variants. Default: auto.",
     )
     parser.add_argument(
         "--capture-mode",
@@ -50,8 +50,8 @@ def main() -> None:
     parser.add_argument(
         "--threshold",
         type=float,
-        default=0.98,
-        help="Template match threshold. Higher values reduce false positives. Default: 0.98.",
+        default=0.80,
+        help="OCR confidence threshold. Higher values reduce false positives. Default: 0.80.",
     )
     parser.add_argument(
         "--capture-hotkey",
@@ -77,7 +77,7 @@ def main() -> None:
 def run_ocr_capture_console(
     variant: OcrVariant = "auto",
     capture_mode: CaptureMode = "auto",
-    threshold: float = 0.98,
+    threshold: float = 0.80,
     capture_hotkey: str = DEFAULT_CAPTURE_HOTKEY,
     quit_hotkey: str = DEFAULT_QUIT_HOTKEY,
 ) -> None:
@@ -145,31 +145,10 @@ def recognize_sequences_for_capture(
     variant: OcrVariant,
     threshold: float,
 ) -> list[str]:
-    if variant != "auto":
-        return recognize_digit_sequences(image, variant=variant, threshold=threshold)
+    if variant == "auto":
+        variant = "small"
 
-    results_by_variant = {
-        "small": recognize_digit_sequences(image, variant="small", threshold=threshold),
-        "elevator": recognize_digit_sequences(image, variant="elevator", threshold=threshold),
-    }
-    return choose_best_variant_result(results_by_variant)
-
-
-def choose_best_variant_result(results_by_variant: dict[str, list[str]]) -> list[str]:
-    best_result: list[str] = []
-    best_score = (-1, 0, -1)
-
-    for variant, result in results_by_variant.items():
-        score = (
-            sum(len(group) for group in result),
-            -len(result),
-            1 if variant == "elevator" else 0,
-        )
-        if score > best_score:
-            best_score = score
-            best_result = result
-
-    return best_result
+    return recognize_digit_sequences(image, variant=variant, threshold=threshold)
 
 
 if __name__ == "__main__":

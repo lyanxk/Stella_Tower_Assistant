@@ -27,12 +27,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const apiClient = {
   getStatus: () => request<AutomationStatus>("/api/automation/status"),
-  getLogs: async () => (await request<{ items: AutomationLogEntry[] }>("/api/automation/logs")).items,
+  getLogs: async (limit = 100) =>
+    (await request<{ items: AutomationLogEntry[] }>(`/api/automation/logs?limit=${limit}`)).items,
   start: () => request<ActionResponse>("/api/automation/start", { method: "POST" }),
   pause: () => request<ActionResponse>("/api/automation/pause", { method: "POST" }),
   resume: () => request<ActionResponse>("/api/automation/resume", { method: "POST" }),
   stop: () => request<ActionResponse>("/api/automation/stop", { method: "POST" }),
-  skipInitial: () => request<ActionResponse>("/api/automation/skip-initial", { method: "POST" }),
+  exit: () => request<ActionResponse>("/api/system/exit", { method: "POST" }),
   getSettings: () => request<SettingsResponse>("/api/settings"),
   getTemplates: async () => (await request<{ items: TemplateInfo[] }>("/api/templates")).items,
   getScreenshot: () => request<ScreenshotResponse>("/api/emulator/screenshot"),

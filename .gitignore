@@ -1,4 +1,5 @@
 .venv/
+.codex_tmp/
 __pycache__/
 *.py[cod]
 
@@ -11,3 +12,4 @@ apps/api/.pytest_cache/
 apps/api/.mypy_cache/
 apps/api/.ruff_cache/
 apps/api/assets/test_resources/
+流程.md

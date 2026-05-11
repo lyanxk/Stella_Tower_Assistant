@@ -3,7 +3,6 @@ src/stellatowerassistant/__init__.py
 src/stellatowerassistant/cli.py
 src/stellatowerassistant/ocr_capture.py
 src/stellatowerassistant/ocr_image_cli.py
-src/stellatowerassistant/ocr_test_cli.py
 src/stellatowerassistant/api/__init__.py
 src/stellatowerassistant/api/app.py
 src/stellatowerassistant/api/routes/__init__.py
@@ -22,6 +21,8 @@ src/stellatowerassistant/core/__init__.py
 src/stellatowerassistant/core/automation/__init__.py
 src/stellatowerassistant/core/automation/actions.py
 src/stellatowerassistant/core/automation/ocr.py
+src/stellatowerassistant/core/automation/potential.py
+src/stellatowerassistant/core/automation/readings.py
 src/stellatowerassistant/core/automation/run_loop.py
 src/stellatowerassistant/core/automation/shop.py
 src/stellatowerassistant/core/automation/vision.py
@@ -40,6 +41,3 @@ src/stellatowerassistant_api.egg-info/dependency_links.txt
 src/stellatowerassistant_api.egg-info/entry_points.txt
 src/stellatowerassistant_api.egg-info/requires.txt
 src/stellatowerassistant_api.egg-info/top_level.txt
-tests/test_events.py
-tests/test_ocr.py
-tests/test_settings.py

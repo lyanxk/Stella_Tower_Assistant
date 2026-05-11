@@ -67,6 +67,8 @@ For the standalone OCR capture tool:
 .\scripts\start-ocr-capture.ps1
 ```
 
+OCR uses RapidOCR with ONNX Runtime, matching the PaddleOCR-style OCR pipeline used by MAA.
+
 If frontend dependencies are not installed yet:
 
 ```powershell

@@ -6,12 +6,9 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from ..config.settings import (
+    OCR_CURRENT_GOLD_FALLBACK_THRESHOLD,
     OCR_CURRENT_GOLD_REGION,
     OCR_CURRENT_GOLD_THRESHOLD,
-    OCR_ELEVATOR_FLOOR_REGION,
-    OCR_ELEVATOR_FLOOR_THRESHOLD,
-    OCR_MAX_FLOOR,
-    OCR_MIN_FLOOR,
     OCR_OBSERVE_INTERVAL,
 )
 from ..runtime.events import emit_log
@@ -23,9 +20,7 @@ RegionRatio = tuple[float, float, float, float]
 
 @dataclass(frozen=True)
 class RunReading:
-    elevator_floor: int | None = None
     current_gold: int | None = None
-    floor_candidates: tuple[str, ...] = field(default_factory=tuple)
     gold_candidates: tuple[str, ...] = field(default_factory=tuple)
 
 
@@ -53,17 +48,12 @@ def observe_run_reading(image: np.ndarray, *, force: bool = False) -> RunReading
         return reading
 
     _last_reading = reading
-    state.mark_ocr_reading(
-        elevator_floor=reading.elevator_floor,
-        current_gold=reading.current_gold,
-    )
+    state.mark_ocr_reading(current_gold=reading.current_gold)
     emit_log(
         _format_reading_message(reading),
         scope="ocr",
         payload={
-            "elevator_floor": reading.elevator_floor,
             "current_gold": reading.current_gold,
-            "floor_candidates": list(reading.floor_candidates),
             "gold_candidates": list(reading.gold_candidates),
         },
         event_type="ocr_reading",
@@ -72,22 +62,16 @@ def observe_run_reading(image: np.ndarray, *, force: bool = False) -> RunReading
 
 
 def read_run_reading(image: np.ndarray) -> RunReading:
-    floor_sequences = _read_digit_sequences(
-        image,
-        region=OCR_ELEVATOR_FLOOR_REGION,
-        variant="elevator",
-        threshold=OCR_ELEVATOR_FLOOR_THRESHOLD,
-    )
     gold_sequences = _read_digit_sequences(
         image,
         region=OCR_CURRENT_GOLD_REGION,
         variant="small",
-        threshold=OCR_CURRENT_GOLD_THRESHOLD,
+        threshold=OCR_CURRENT_GOLD_FALLBACK_THRESHOLD,
     )
+    current_gold = _choose_gold(gold_sequences, preferred_threshold=OCR_CURRENT_GOLD_THRESHOLD)
+
     return RunReading(
-        elevator_floor=_choose_floor(floor_sequences),
-        current_gold=_choose_gold(gold_sequences),
-        floor_candidates=tuple(sequence.text for sequence in floor_sequences),
+        current_gold=current_gold,
         gold_candidates=tuple(sequence.text for sequence in gold_sequences),
     )
 
@@ -116,23 +100,14 @@ def _crop_ratio(image: np.ndarray, region: RegionRatio) -> np.ndarray:
     return image[top:bottom, left:right]
 
 
-def _choose_floor(sequences: list[DigitSequence]) -> int | None:
-    candidates = [
-        (value, sequence)
-        for sequence in sequences
-        if (value := _parse_int(sequence.text)) is not None and OCR_MIN_FLOOR <= value <= OCR_MAX_FLOOR
-    ]
-    if not candidates:
-        return None
-
-    value, _ = max(candidates, key=lambda item: (item[1].score, -item[1].top, -item[1].left))
-    return value
-
-
-def _choose_gold(sequences: list[DigitSequence]) -> int | None:
+def _choose_gold(sequences: list[DigitSequence], *, preferred_threshold: float) -> int | None:
     candidates = [(value, sequence) for sequence in sequences if (value := _parse_int(sequence.text)) is not None]
     if not candidates:
         return None
+
+    preferred_candidates = [(value, sequence) for value, sequence in candidates if sequence.score >= preferred_threshold]
+    if preferred_candidates:
+        candidates = preferred_candidates
 
     value, _ = max(candidates, key=lambda item: (len(item[1].text), item[1].score, -item[1].top, item[1].left))
     return value
@@ -146,9 +121,8 @@ def _parse_int(text: str) -> int | None:
 
 
 def _format_reading_message(reading: RunReading) -> str:
-    floor = reading.elevator_floor if reading.elevator_floor is not None else "?"
     gold = reading.current_gold if reading.current_gold is not None else "?"
-    return f"OCR reading: floor={floor}, gold={gold}"
+    return f"OCR reading: gold={gold}"
 
 
 def _clamp(value: int, lower: int, upper: int) -> int:
